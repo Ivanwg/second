@@ -1,21 +1,31 @@
 import vk_api, json
 from vk_api.longpoll import VkLongPoll, VkEventType
+from vk_api.keyboard import VkKeyboard
 from configparser import ConfigParser
 
-config = ConfigParser()         #почему иногда не реагирует на первые сообщения   как отключить изначально созданную клавиатуру
+config = ConfigParser()  # почему иногда не реагирует на первые сообщения   как отключить изначально созданную клавиатуру
 config.read('config.ini')
 
 vk_session = vk_api.VkApi(token=config['VK']['token_new'])
+vk = vk_session.get_api()
 longpoll = VkLongPoll(vk_session)
-vk_session._auth_token()
+
 
 def sender(id, text):
-    vk_session.method('messages.send', {'user_id':id, 'message':text, 'random_id': 0})
+    print(id, text)
+    vk.messages.send(
+        user_id=id,
+        random_id=0,
+        keyboard=VkKeyboard.get_empty_keyboard(),
+        message=text
+    )
+
 
 def adder(x):
     file = open('data.txt', 'a', encoding='utf-8')
     file.write(f'{x}\n')
     file.close()
+
 
 def check(a):
     file = open('data.txt', 'r', encoding='utf-8')
@@ -35,5 +45,5 @@ for event in longpoll.listen():
                 if check(id):
                     adder(id)
             else:
-                sender(id, 'Я не могу понять Ваше сообщение(\nСкоро админ ответит на все ваши вопросы)')
-
+                sender(id,
+                       'Я не могу понять Ваше сообщение(\nСкоро админ ответит на все ваши вопросы)')
